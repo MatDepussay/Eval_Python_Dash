@@ -1,41 +1,80 @@
-from dash import Dash, dcc, html, page_container, page_registry
+from dash import Dash, html, page_container, page_registry
+import dash_bootstrap_components as dbc
 import os
 import threading
 import webbrowser
 
 
-app = Dash(__name__, use_pages=True, suppress_callback_exceptions=True)
+app = Dash(
+    __name__,
+    use_pages=True,
+    suppress_callback_exceptions=True,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+)
 server = app.server
 
 
-def _build_navigation() -> list:
-    """Build page links from Dash's page registry."""
+
+def _build_navigation() -> dbc.Nav:
+    """Build page links from Dash's page registry using Bootstrap nav pills."""
     if not page_registry:
-        return [html.P("Aucune page enregistree pour le moment.")]
+        return dbc.Nav(
+            [dbc.NavItem(dbc.NavLink("Aucune page enregistree pour le moment.", disabled=True))],
+            pills=True,
+        )
 
     pages = sorted(
         page_registry.values(),
         key=lambda page: (page.get("order", 9999), page.get("path", "/")),
     )
-    links = []
-    for page in pages:
-        links.append(
-            dcc.Link(
-                page.get("name", page.get("module", "Page")),
-                href=page.get("path", "/"),
-                style={"display": "inline-block", "marginRight": "1rem"},
+
+    return dbc.Nav(
+        [
+            dbc.NavItem(
+                dbc.NavLink(
+                    page.get("name", page.get("module", "Page")),
+                    href=page.get("path", "/"),
+                    active="exact",
+                )
             )
-        )
-    return links
+            for page in pages
+        ],
+        pills=True,
+        className="gap-2 flex-wrap",
+    )
 
 
-app.layout = html.Div(
+app.layout = dbc.Container(
     [
-        html.H1("Application Dash"),
-        html.Nav(_build_navigation(), style={"marginBottom": "1rem"}),
-        page_container,
+        dbc.NavbarSimple(
+            brand="Application M2 MECEN",
+            color="primary",
+            dark=True,
+            fluid=True,
+            className="rounded-3 shadow-sm mt-3",
+        ),
+        dbc.Card(
+            [
+                dbc.CardBody(
+                    [
+                        html.Div(
+                            [
+                                html.H2("Navigation", className="h5 mb-3"),
+                                _build_navigation(),
+                            ]
+                        )
+                    ]
+                )
+            ],
+            className="my-4 shadow-sm border-0",
+        ),
+        dbc.Card(
+            dbc.CardBody(page_container, className="p-4"),
+            className="shadow-sm border-0 mb-4",
+        ),
     ],
-    style={"maxWidth": "1000px", "margin": "0 auto", "padding": "1.5rem"},
+    fluid="md",
+    className="pb-4",
 )
 
 

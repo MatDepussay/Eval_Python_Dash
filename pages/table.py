@@ -2,6 +2,7 @@ import csv
 from functools import lru_cache
 from pathlib import Path
 
+import dash_bootstrap_components as dbc
 from dash import dash_table, dcc, html, register_page
 
 
@@ -36,6 +37,7 @@ def _load_rows() -> list[dict]:
         return rows
 
 
+
 def _build_dropdown_options(rows: list[dict], field_name: str, all_label: str) -> list[dict]:
     values = sorted({row[field_name] for row in rows if row.get(field_name)})
     options = [{"label": all_label, "value": "ALL"}]
@@ -47,72 +49,109 @@ _INITIAL_ROWS = _load_rows()
 _COLUMNS = [{"name": column, "id": column} for column in DISPLAY_COLUMNS]
 
 
-layout = html.Div(
+layout = dbc.Container(
     [
-        html.H2("Page 1 - Tableau des donnees"),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Label("Selectionner une region:"),
-                        dcc.Dropdown(
-                            id=REGION_DROPDOWN_ID,
-                            options=_build_dropdown_options(_INITIAL_ROWS, "region", "Toutes les regions"),
-                            value="ALL",
-                            clearable=False,
-                        ),
-                    ],
-                    style={"minWidth": "280px", "flex": "1"},
-                ),
-                html.Div(
-                    [
-                        html.Label("Selectionner un type:"),
-                        dcc.Dropdown(
-                            id=TYPE_DROPDOWN_ID,
-                            options=_build_dropdown_options(_INITIAL_ROWS, "type", "Tous les types"),
-                            value="ALL",
-                            clearable=False,
-                        ),
-                    ],
-                    style={"minWidth": "280px", "flex": "1"},
-                ),
-            ],
-            style={"display": "flex", "gap": "1rem", "flexWrap": "wrap", "marginBottom": "1rem"},
+        dbc.Row(
+            dbc.Col(
+                [
+                    html.H2("Page 1 - Tableau des donnees", className="mb-1"),
+                ],
+                width=12,
+            ),
+            className="mb-4",
         ),
-        dash_table.DataTable(
-            id=DATA_TABLE_ID,
-            columns=_COLUMNS,
-            data=_INITIAL_ROWS,
-            page_size=15,
-            style_table={"overflowX": "auto", "border": "2px solid #000", "borderRadius": "0"},
-            style_cell={
-                "textAlign": "left",
-                "padding": "0.5rem",
-                "fontFamily": "Segoe UI, Tahoma, sans-serif",
-                "fontSize": "14px",
-                "minWidth": "110px",
-                "maxWidth": "260px",
-                "border": "1px solid #000",
-            },
-            style_header={
-                "backgroundColor": "#87CEEB",
-                "color": "#000000",
-                "fontWeight": "600",
-            },
-            style_data={"backgroundColor": "#ffffff", "color": "#202124"},
-            style_data_conditional=[
-                {
-                    "if": {"row_index": "odd"},
-                    "backgroundColor": "#f2f2f2",
-                }
+        dbc.Card(
+            [
+                dbc.CardHeader("Filtres", className="fw-semibold"),
+                dbc.CardBody(
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    html.Label("Selectionner une region", htmlFor=REGION_DROPDOWN_ID, className="form-label"),
+                                    dcc.Dropdown(
+                                        id=REGION_DROPDOWN_ID,
+                                        options=_build_dropdown_options(_INITIAL_ROWS, "region", "Toutes les regions"),
+                                        value="ALL",
+                                        clearable=False,
+                                    ),
+                                ],
+                                xs=12,
+                                md=6,
+                                className="mb-3 mb-md-0",
+                            ),
+                            dbc.Col(
+                                [
+                                    html.Label("Selectionner un type", htmlFor=TYPE_DROPDOWN_ID, className="form-label"),
+                                    dcc.Dropdown(
+                                        id=TYPE_DROPDOWN_ID,
+                                        options=_build_dropdown_options(_INITIAL_ROWS, "type", "Tous les types"),
+                                        value="ALL",
+                                        clearable=False,
+                                    ),
+                                ],
+                                xs=12,
+                                md=6,
+                            ),
+                        ],
+                        className="g-3",
+                    )
+                ),
             ],
-            sort_action="native",
-            filter_action="none",
+            className="shadow-sm border-0 mb-4",
+        ),
+        dbc.Card(
+            [
+                dbc.CardHeader("Tableau", className="fw-semibold"),
+                dbc.CardBody(
+                    html.Div(
+                        dash_table.DataTable(
+                            id=DATA_TABLE_ID,
+                            columns=_COLUMNS,
+                            data=_INITIAL_ROWS,
+                            page_size=15,
+                            sort_action="native",
+                            filter_action="none",
+                            style_table={"overflowX": "auto"},
+                            style_cell={
+                                "textAlign": "left",
+                                "padding": "0.75rem",
+                                "fontFamily": 'var(--bs-body-font-family, "Segoe UI", sans-serif)',
+                                "fontSize": "0.95rem",
+                                "border": "1px solid var(--bs-border-color, #dee2e6)",
+                                "backgroundColor": "var(--bs-body-bg, #ffffff)",
+                                "color": "var(--bs-body-color, #212529)",
+                                "minWidth": "110px",
+                                "maxWidth": "260px",
+                                "whiteSpace": "normal",
+                                "height": "auto",
+                            },
+                            style_header={
+                                "backgroundColor": "var(--bs-primary, #0d6efd)",
+                                "color": "white",
+                                "fontWeight": "700",
+                                "border": "1px solid var(--bs-primary, #0d6efd)",
+                            },
+                            style_data_conditional=[
+                                {"if": {"row_index": "odd"}, "backgroundColor": "var(--bs-tertiary-bg, #f8f9fa)"}
+                            ],
+                            css=[
+                                {
+                                    "selector": ".dash-spreadsheet-container .dash-spreadsheet-inner table",
+                                    "rule": "border-collapse: collapse;",
+                                },
+                            ],
+                        ),
+                        className="table-responsive",
+                    )
+                ),
+            ],
+            className="shadow-sm border-0",
         ),
     ],
-    style={"backgroundColor": "#efefef", "padding": "1rem", "borderRadius": "8px"},
+    fluid=True,
+    className="px-0",
 )
 
 
-# Import callbacks so they are registered when this page module is loaded.
 from pages import table_cb  # noqa: E402,F401

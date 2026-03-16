@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+import dash_bootstrap_components as dbc
 from dash import dcc, html, register_page
 
 
@@ -15,77 +16,53 @@ def _read_markdown(filename: str) -> str:
     return file_path.read_text(encoding="utf-8")
 
 
-def _accordion_section(title: str, filename: str, opened: bool = False) -> html.Details:
-    summary_background = "#c8d8ef" if opened else "#f8f8f8"
-
-    return html.Details(
-        [
-            html.Summary(
-                title,
-                style={
-                    "fontWeight": "600",
-                    "cursor": "pointer",
-                    "backgroundColor": summary_background,
-                    "padding": "0.55rem 0.75rem",
-                    "fontSize": "14px",
-                },
-            ),
-            dcc.Markdown(
-                _read_markdown(filename),
-                style={"padding": "0.9rem 0.75rem 0.6rem"},
-            ),
-        ],
-        open=opened,
-        style={
-            "backgroundColor": "#ffffff",
-            "border": "1px solid #d0d0d0",
-            "borderRadius": "4px",
-            "overflow": "hidden",
-        },
-    )
-
-
-layout = html.Div(
+layout = dbc.Container(
     [
-        html.Div(
-            html.H2(
-                "Presentation de Dash",
-                style={
-                    "margin": "0",
-                    "color": "#ffffff",
-                    "textTransform": "uppercase",
-                    "letterSpacing": "1px",
-                    "fontSize": "34px",
-                    "textAlign": "center",
-                    "textShadow": "0 1px 3px rgba(0, 0, 0, 0.45)",
-                },
-            ),
-            style={
-                "backgroundImage": "url('/assets/dash.jpg')",
-                "backgroundSize": "cover",
-                "backgroundPosition": "center",
-                "borderRadius": "4px 4px 0 0",
-                "height": "88px",
-                "display": "flex",
-                "alignItems": "center",
-                "justifyContent": "center",
-                "borderBottom": "1px solid #c8c8c8",
-            },
-        ),
-        html.Div(
+        dbc.Card(
             [
-                _accordion_section("Accueil", "expli1.md"),
-                _accordion_section("Layout", "expli2.md"),
-                _accordion_section("CallBack", "expli3.md"),
+                html.Div(
+                    html.H2(
+                        "Presentation de Dash",
+                        className="display-6 text-white text-center mb-0",
+                    ),
+                    style={
+                        "backgroundImage": "url('/assets/dash.jpg')",
+                        "backgroundSize": "cover",
+                        "backgroundPosition": "center",
+                        "minHeight": "140px",
+                    },
+                    className="d-flex align-items-center justify-content-center rounded-top px-3",
+                ),
+                dbc.CardBody(
+                    [
+                        dbc.Accordion(
+                            [
+                                dbc.AccordionItem(
+                                    dcc.Markdown(_read_markdown("expli1.md"), className="mb-0"),
+                                    title="Accueil",
+                                    item_id="accueil",
+                                ),
+                                dbc.AccordionItem(
+                                    dcc.Markdown(_read_markdown("expli2.md"), className="mb-0"),
+                                    title="Layout",
+                                    item_id="layout",
+                                ),
+                                dbc.AccordionItem(
+                                    dcc.Markdown(_read_markdown("expli3.md"), className="mb-0"),
+                                    title="CallBack",
+                                    item_id="callback",
+                                ),
+                            ],
+                            start_collapsed=True,
+                            always_open=True,
+                            className="shadow-sm",
+                        ),
+                    ]
+                ),
             ],
-            style={"display": "grid", "gap": "0.55rem", "padding": "0.75rem"},
-        ),
+            className="shadow-sm border-0",
+        )
     ],
-    style={
-        "backgroundColor": "#f1f1f1",
-        "padding": "0.85rem",
-        "borderRadius": "10px",
-        "border": "2px solid #5d5d5d",
-        "boxShadow": "12px 10px 0 #7a7a7a",
-    },
+    fluid=True,
+    className="px-0",
 )
