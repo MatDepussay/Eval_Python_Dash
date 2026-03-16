@@ -5,7 +5,7 @@ from pathlib import Path
 from dash import dcc, html, register_page
 
 
-register_page(__name__, path="/compare", name="Compare")
+register_page(__name__, path="/compare", name="Compare", order=2)
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "datas" / "avocado.csv"
 

@@ -9,17 +9,23 @@ server = app.server
 
 
 def _build_navigation() -> list:
-    """Build visible navigation links for the two required pages."""
-    page_names = {page.get("name") for page in page_registry.values()}
+    """Build page links from Dash's page registry."""
+    if not page_registry:
+        return [html.P("Aucune page enregistree pour le moment.")]
 
-    links = [
-        dcc.Link("Table", href="/table", style={"display": "inline-block", "marginRight": "1rem"}),
-        dcc.Link("Compare", href="/compare", style={"display": "inline-block", "marginRight": "1rem"}),
-    ]
-
-    if "Table" not in page_names or "Compare" not in page_names:
-        links.append(html.Span("(attention: une page n'est pas chargee)", style={"color": "#b00020"}))
-
+    pages = sorted(
+        page_registry.values(),
+        key=lambda page: (page.get("order", 9999), page.get("path", "/")),
+    )
+    links = []
+    for page in pages:
+        links.append(
+            dcc.Link(
+                page.get("name", page.get("module", "Page")),
+                href=page.get("path", "/"),
+                style={"display": "inline-block", "marginRight": "1rem"},
+            )
+        )
     return links
 
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from dash import dash_table, dcc, html, register_page
 
 
-register_page(__name__, path="/table", name="Table")
+register_page(__name__, path="/table", name="Table", order=1)
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "datas" / "avocado.csv"
 
